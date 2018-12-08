@@ -131,7 +131,7 @@ public class HuffProcessor {
 
 		while(true) {
 			int bits = in.readBits(BITS_PER_WORD);
-			if(bits != -1) {
+			if(bits == -1) {
 				break;
 			}
 			code = codings[bits];
