@@ -23,7 +23,6 @@ public class HuffProcessor {
 	
 	public static final int DEBUG_HIGH = 4;
 	public static final int DEBUG_LOW = 1;
-	public String[] encodings = new String[ALPH_SIZE +1];
 	
 	public HuffProcessor() {
 		this(0);
@@ -76,11 +75,11 @@ public class HuffProcessor {
 	
 	private HuffNode makeTreeFromCounts(int[] counts) {
 		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
-
+		pq.add(new HuffNode(PSEUDO_EOF, 1));
 
 		for(int c = 0; c < counts.length; c++) {
 			if(counts[c] > 0) {
-				pq.add(new HuffNode(c,counts[c],null,null));
+				pq.add(new HuffNode(c,counts[c]));
 			}
 		    
 		}
@@ -98,6 +97,7 @@ public class HuffProcessor {
 	}
 	
 	private String[] makeCodingsFromTree(HuffNode root) {
+		String[] encodings = new String[ALPH_SIZE +1];
 		codingsHelper(root, "", encodings);
 		return encodings;
 	}
@@ -134,7 +134,6 @@ public class HuffProcessor {
 			if(bits != -1) {
 				break;
 			}
-			
 			code = encodings[bits];
 			if(code != null) {
 				out.writeBits(code.length(), Integer.parseInt(code,2));
