@@ -1,6 +1,8 @@
 import java.io.*;
 
 public class HuffMainCompress {
+	
+	
 	public static void main(String[] args) {
 		
 		System.out.println("Huffman Compress Main");
