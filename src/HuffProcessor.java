@@ -126,7 +126,7 @@ public class HuffProcessor {
 	
 	private void writeCompressedBits(String[] codings, BitInputStream in, BitOutputStream out) {
 		
-		String code = encodings[PSEUDO_EOF];
+		String code = codings[PSEUDO_EOF];
 		out.writeBits(code.length(), Integer.parseInt(code,2));
 
 		while(true) {
@@ -134,7 +134,7 @@ public class HuffProcessor {
 			if(bits != -1) {
 				break;
 			}
-			code = encodings[bits];
+			code = codings[bits];
 			if(code != null) {
 				out.writeBits(code.length(), Integer.parseInt(code,2));
 			}
