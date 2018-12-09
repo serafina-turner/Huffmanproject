@@ -51,26 +51,32 @@ public class HuffProcessor {
 //	}
 	
 	public void compress(BitInputStream in, BitOutputStream out) {
+		
 		int[] counts = readForCounts(in);
 		HuffNode root = makeTreeFromCounts(counts);
 		String[] codings = makeCodingsFromTree(root);
 		
 		out.writeBits(BITS_PER_INT, HUFF_TREE);
 		writeHeader(root, out);
+		
 		in.reset();
 		writeCompressedBits(codings,in,out);
 		out.close();
 	}
 	
 	private int[] readForCounts(BitInputStream in) {
-		int[] freq = new int[ALPH_SIZE +1];
+		int[] frequencies = new int[ALPH_SIZE +1];
 		int bits = in.readBits(BITS_PER_WORD);
-		while(bits != -1) {
-			freq[bits] = freq[bits] + 1;
+		frequencies[PSEUDO_EOF] = 1;
+		while(true) { //while bits != -1?
+			if(bits == -1) {
+				break;
+			}
+			frequencies[bits] ++;
 			bits = in.readBits(BITS_PER_WORD);
 		}
-		freq[PSEUDO_EOF] = 1;
-		return freq;
+	
+		return frequencies;
 	}
 	
 	private HuffNode makeTreeFromCounts(int[] counts) {
@@ -79,7 +85,7 @@ public class HuffProcessor {
 
 		for(int c = 0; c < counts.length; c++) {
 			if(counts[c] > 0) {
-				pq.add(new HuffNode(c,counts[c]));
+				pq.add(new HuffNode(c,counts[c],null,null));
 			}
 		    
 		}
@@ -102,13 +108,13 @@ public class HuffProcessor {
 		return encodings;
 	}
 	
-	private void codingsHelper(HuffNode root, String s, String[] encodings) {
+	private void codingsHelper(HuffNode root, String trail, String[] encodings) {
 		if(root.myLeft == null && root.myRight == null) { //not internal node
-			encodings[root.myValue] = s;
+			encodings[root.myValue] = trail;
 			return;
 		}
-		codingsHelper(root.myLeft, s+"0", encodings);
-		codingsHelper(root.myRight, s+"1", encodings);
+		codingsHelper(root.myLeft, trail+"0", encodings);
+		codingsHelper(root.myRight, trail+"1", encodings);
 			
 	}
 	
@@ -126,10 +132,10 @@ public class HuffProcessor {
 	
 	private void writeCompressedBits(String[] codings, BitInputStream in, BitOutputStream out) {
 		
-		String code = codings[PSEUDO_EOF];
-		out.writeBits(code.length(), Integer.parseInt(code,2));
+		String code;
 
 		while(true) {
+			
 			int bits = in.readBits(BITS_PER_WORD);
 			if(bits == -1) {
 				break;
@@ -139,6 +145,8 @@ public class HuffProcessor {
 				out.writeBits(code.length(), Integer.parseInt(code,2));
 			}
 		}
+		code = codings[PSEUDO_EOF];
+		out.writeBits(code.length(), Integer.parseInt(code,2));
 		
 	}
 	
